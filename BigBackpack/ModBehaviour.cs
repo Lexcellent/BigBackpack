@@ -8,7 +8,6 @@ namespace BigBackpack
 {
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
-        private bool _isInit = false;
         private Harmony? _harmony = null;
         public static float InventoryCapacityIncrease { get; private set; } = 200f;
         public static float MaxWeightIncrease { get; private set; } = 200f;
@@ -16,36 +15,37 @@ namespace BigBackpack
         protected override void OnAfterSetup()
         {
             Debug.Log("BigBackpack模组：OnAfterSetup方法被调用");
-            if (!_isInit)
+            LoadConfig();
+            if (_harmony != null)
             {
-                LoadConfig();
-                Debug.Log("BigBackpack模组：执行修补");
-                _harmony = new Harmony("Lexcellent.BigBackpack");
-                _harmony.PatchAll(Assembly.GetExecutingAssembly());
-                _isInit = true;
-                Debug.Log("BigBackpack模组：修补完成");
+                Debug.Log("BigBackpack模组：已修补 先卸载");
+                _harmony.UnpatchAll();
             }
+
+            Debug.Log("BigBackpack模组：执行修补");
+            _harmony = new Harmony("Lexcellent.BigBackpack");
+            _harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Debug.Log("BigBackpack模组：修补完成");
         }
 
         protected override void OnBeforeDeactivate()
         {
             Debug.Log("BigBackpack模组：OnBeforeDeactivate方法被调用");
-            if (_isInit)
+            Debug.Log("BigBackpack模组：执行取消修补");
+            if (_harmony != null)
             {
-                Debug.Log("BigBackpack模组：执行取消修补");
-                if (_harmony != null)
-                {
-                    _harmony.UnpatchAll();
-                }
-                Debug.Log("BigBackpack模组：执行取消修补完毕");
+                _harmony.UnpatchAll();
             }
+
+            Debug.Log("BigBackpack模组：执行取消修补完毕");
         }
 
         private void LoadConfig()
         {
             try
             {
-                string configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "info.ini");
+                string configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    "info.ini");
                 if (File.Exists(configPath))
                 {
                     string[] lines = File.ReadAllLines(configPath);
@@ -79,48 +79,6 @@ namespace BigBackpack
             catch (Exception e)
             {
                 Debug.Log($"BigBackpack模组：读取配置文件时出错：{e.Message}，使用默认值");
-            }
-        }
-    }
-
-    // 单独的补丁类
-    [HarmonyPatch(typeof(CharacterMainControl), nameof(CharacterMainControl.InventoryCapacity), MethodType.Getter)]
-    public static class InventoryCapacityPatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix(CharacterMainControl __instance, ref float __result)
-        {
-            try
-            {
-                // Debug.Log($"BigBackpack模组：角色所属阵营{__instance.Team},原始背包容量：{__result}");
-                if (__instance != null && __instance.Team == Teams.player)
-                {
-                    __result += ModBehaviour.InventoryCapacityIncrease;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Log($"BigBackpack模组：错误：{e.Message}");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(CharacterMainControl), nameof(CharacterMainControl.MaxWeight), MethodType.Getter)]
-    public static class MaxWeightPatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix(CharacterMainControl __instance, ref float __result)
-        {
-            try
-            {
-                if (__instance != null && __instance.Team == Teams.player)
-                {
-                    __result += ModBehaviour.MaxWeightIncrease;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Log($"BigBackpack模组：错误：{e.Message}");
             }
         }
     }
