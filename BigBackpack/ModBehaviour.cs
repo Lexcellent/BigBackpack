@@ -9,7 +9,7 @@ namespace BigBackpack
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         private Harmony? _harmony = null;
-        public static float InventoryCapacityIncrease { get; private set; } = 200f;
+        public static float InventoryCapacityIncrease { get; private set; } = 50f;
         public static float MaxWeightIncrease { get; private set; } = 200f;
 
         protected override void OnAfterSetup()
