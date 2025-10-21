@@ -1,4 +1,4 @@
-背包大小+200 背包负重+200
+背包大小+50 背包负重+200
 
 mod模板参考：https://github.com/xvrsl/duckov_modding
 
